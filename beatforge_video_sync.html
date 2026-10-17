@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BeatForge — Make a Rhythm Game</title>
+<style>
+:root{--bg:#0b1020;--panel:#141b31;--panel2:#1b2541;--text:#f3f5ff;--muted:#a9b3d1;--cyan:#53e5ff;--pink:#ff5ca8;--lime:#b8ff68;--ambient:#1b2750;--ambient2:#10172d}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 0%,var(--ambient) 0%,var(--ambient2) 45%,var(--bg) 78%);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh;transition:background 1s ease}
+.panel{transition:border-color 1s ease,box-shadow 1s ease}
+main{max-width:1050px;margin:auto;padding:24px 16px 50px}.brand{display:flex;align-items:center;gap:12px}.logo{font-size:28px;background:linear-gradient(135deg,var(--cyan),var(--pink));color:#091020;width:48px;height:48px;display:grid;place-items:center;border-radius:15px;font-weight:900;box-shadow:0 0 30px #53e5ff33}
+h1{font-size:clamp(28px,5vw,44px);margin:0;letter-spacing:-1.5px}.sub{color:var(--muted);margin:5px 0 22px}.panel{background:color-mix(in srgb, var(--panel) 92%, var(--ambient));border:1px solid color-mix(in srgb, #354164 65%, var(--ambient));border-radius:20px;padding:18px;margin:14px 0;box-shadow:0 12px 36px #0003}.panel h2{font-size:17px;margin:0 0 12px}.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.upload{display:block;border:2px dashed #50638e;border-radius:16px;padding:22px;text-align:center;flex:1;min-width:220px;background:#0c1328;cursor:pointer}.upload:hover{border-color:var(--cyan)}input[type=file]{display:none}.upload strong{display:block;font-size:17px}.upload span{color:var(--muted);font-size:13px}.btn{border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer;background:var(--cyan);color:#06101c;font-size:14px}.btn.secondary{background:#293653;color:var(--text);border:1px solid #4a5b80}.btn:disabled{opacity:.4;cursor:not-allowed}.settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:14px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}.field select,.field input{width:100%;background:#0c1328;color:var(--text);border:1px solid #39496d;border-radius:10px;padding:10px}
+#status{color:var(--muted);font-size:13px;margin-top:10px;min-height:18px}.game-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}.stats{display:flex;gap:8px;flex-wrap:wrap}.stat{background:#0b1328;border:1px solid #303e61;border-radius:12px;padding:8px 12px;font-size:13px}.stat b{color:var(--cyan);margin-left:5px}
+#stage{height:390px;position:relative;overflow:hidden;background:linear-gradient(#0b1228,#111b36);border:1px solid #354568;border-radius:16px;margin-top:14px;touch-action:manipulation}
+#videoBg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.48;z-index:0;display:none;pointer-events:none}.lane{position:absolute;top:0;z-index:1;bottom:0;width:25%;border-right:1px solid #283958;background:linear-gradient(180deg,#1a284722,#53e5ff08)}.lane:nth-child(1){left:0}.lane:nth-child(2){left:25%}.lane:nth-child(3){left:50%}.lane:nth-child(4){left:75%;border:0}
+.hitline{position:absolute;bottom:65px;left:0;right:0;height:3px;background:var(--cyan);box-shadow:0 0 15px var(--cyan);z-index:3}.keyrow{position:absolute;bottom:12px;left:0;right:0;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:0 7px;z-index:4}.key{height:40px;border:1px solid #52678e;background:#1b2b4b;color:#eaf6ff;border-radius:10px;font-weight:900;cursor:pointer}.key:active,.key.flash{background:var(--cyan);color:#07101c}.note{position:absolute;width:19%;height:18px;border-radius:8px;background:linear-gradient(90deg,var(--pink),#ffb0d2);box-shadow:0 0 15px #ff5ca866;z-index:2;transform:translateX(-50%)}.note:after{content:"";position:absolute;inset:4px 6px;border-radius:5px;background:#fff8}.note.good{background:var(--lime);box-shadow:0 0 20px #b8ff6877}.feedback{position:absolute;top:18px;left:0;right:0;text-align:center;font-weight:900;font-size:22px;z-index:5;text-shadow:0 2px 12px #000}.bottom{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}.hint{font-size:12px;color:var(--muted);line-height:1.5}.wave{height:48px;display:flex;align-items:center;gap:2px;margin-top:12px;overflow:hidden}.bar{flex:1;min-width:2px;background:linear-gradient(var(--cyan),#6578ff);border-radius:2px;opacity:.8}
+footer{text-align:center;color:#7887aa;font-size:12px;margin-top:24px}
+@media(max-width:520px){main{padding:16px 10px 32px}.panel{padding:13px}#stage{height:350px}.upload{padding:16px}}
+</style>
+</head>
+<body>
+<main>
+  <div class="brand"><div class="logo">♫</div><div><h1>BeatForge</h1><div style="color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:2px">YOUR SONG. YOUR LEVEL.</div></div></div>
+  <p class="sub">Drop in a song and turn its rhythm into a playable mini rhythm game.</p>
+
+  <section class="panel">
+    <h2>1 · Choose your song</h2>
+    <div class="row">
+      <label class="upload" for="audioFile"><strong>♫ Choose audio or video</strong><span>Select an audio file, or an MP4 to show as a moving background</span></label>
+      <div style="min-width:150px;display:grid;gap:8px"><button class="btn" id="generate" disabled>Generate level ✦</button><button class="btn secondary" id="randomSong">🎲 Random song</button><div id="status">Choose a song to get started.</div></div>
+    </div>
+    <input id="audioFile" type="file" accept="audio/*,video/mp4,video/webm,video/*">
+    <input id="randomFiles" type="file" accept="audio/*,.mp3" multiple style="display:none">
+    <div class="settings">
+      <div class="field"><label for="difficulty">Difficulty</label><select id="difficulty"><option value="easy">Easy · fewer notes</option><option value="normal" selected>Normal · balanced</option><option value="hard">Hard · more notes</option><option value="extreme">EXTREME · brutal density</option></select></div>
+      <div class="field"><label for="lanes">Lanes</label><select id="lanes"><option value="4">4 lanes</option><option value="3">3 lanes</option><option value="2">2 lanes</option></select></div>
+      <div class="field"><label for="speed">Note speed</label><select id="speed"><option value="slow">Slow</option><option value="normal" selected>Normal</option><option value="fast">Fast</option></select></div>
+    </div>
+    <div class="wave" id="waveform" aria-label="Song waveform preview"></div>
+  </section>
+
+  <section class="panel">
+    <div class="game-head"><h2 style="margin:0">2 · Play your level</h2><div class="stats"><div class="stat">Score <b id="score">0</b></div><div class="stat">Combo <b id="combo">0</b></div><div class="stat">Accuracy <b id="accuracy">—</b></div></div></div>
+    <div id="stage" aria-label="Rhythm game playfield">
+      <video id="videoBg" muted playsinline loop></video>
+      <div class="lane"></div><div class="lane"></div><div class="lane"></div><div class="lane"></div>
+      <div class="feedback" id="feedback">Upload a song, then generate a level!</div>
+      <div class="hitline"></div>
+      <div class="keyrow" id="keyrow"></div>
+    </div>
+    <div class="bottom"><div class="hint">Hit the matching lane when a note reaches the glowing line.<br>Keyboard: <b>D F J K</b> · On mobile: tap the lane buttons.</div><div class="row"><button class="btn" id="play" disabled>▶ Play</button><button class="btn secondary" id="stop" disabled>■ Stop / Reset</button></div></div>
+  </section>
+  <section class="panel"><h2>How it works</h2><div class="hint">BeatForge analyses changes in the song's volume and creates notes around strong musical hits. This is an automatic first draft, so very quiet songs or unusual rhythms may need a different difficulty or note speed. Your audio is processed locally in your browser and is not uploaded anywhere.</div></section>
+  <footer>BeatForge · A tiny browser rhythm game prototype</footer>
+</main>
+<script>
+(() => {
+const fileInput=document.getElementById('audioFile'), randomFiles=document.getElementById('randomFiles'), randomBtn=document.getElementById('randomSong'), videoBg=document.getElementById('videoBg'), generateBtn=document.getElementById('generate'), status=document.getElementById('status');
+const playBtn=document.getElementById('play'), stopBtn=document.getElementById('stop'), stage=document.getElementById('stage');
+const waveform=document.getElementById('waveform'), feedback=document.getElementById('feedback');
+const scoreEl=document.getElementById('score'), comboEl=document.getElementById('combo'), accuracyEl=document.getElementById('accuracy');
+const keyrow=document.getElementById('keyrow');
+let audio=null, audioUrl=null, videoUrl=null, audioCtx=null, buffer=null, notes=[], activeNotes=[], raf=0, startedAt=0, running=false, score=0, combo=0, judged=0, hits=0, lanes=4, hitWindow=.18, noteSpeed=280, leadTime=1.8;
+const keyNames={2:['D','K'],3:['D','F','K'],4:['D','F','J','K']};
+function setStatus(t){status.textContent=t}
+function makeKeys(){lanes=+document.getElementById('lanes').value; keyrow.innerHTML='';keyrow.style.gridTemplateColumns=`repeat(${lanes},1fr)`;
+ document.querySelectorAll('.lane').forEach((el,i)=>{el.style.display=i<lanes?'block':'none';el.style.width=(100/lanes)+'%';el.style.left=(i*100/lanes)+'%';el.style.borderRight=i===lanes-1?'0':'1px solid #283958'});
+ keyNames[lanes].forEach((key,i)=>{const b=document.createElement('button');b.className='key';b.textContent=key;b.addEventListener('pointerdown',e=>{e.preventDefault();hitLane(i)});keyrow.appendChild(b)});
+}
+makeKeys(); document.getElementById('lanes').addEventListener('change',()=>{makeKeys();if(buffer)generateLevel()});
+document.getElementById('difficulty').addEventListener('change',()=>{if(buffer)generateLevel()});
+document.getElementById('speed').addEventListener('change',()=>{if(buffer)generateLevel()});
+async function loadChosenFile(file){
+ if(!file)return;
+ stopGame();if(audioUrl)URL.revokeObjectURL(audioUrl);if(videoUrl){URL.revokeObjectURL(videoUrl);videoUrl=null}
+ const isVideo=file.type.startsWith('video/') || /\.(mp4|webm|mov|m4v)$/i.test(file.name);
+ const url=URL.createObjectURL(file);
+ if(isVideo){videoUrl=url;videoBg.src=url;videoBg.style.display='block';videoBg.load();audio=new Audio(url);audio.preload='auto';}
+ else{videoBg.pause();videoBg.removeAttribute('src');videoBg.load();videoBg.style.display='none';cancelAnimationFrame(ambientRaf);document.documentElement.style.setProperty('--ambient','#1b2750');document.documentElement.style.setProperty('--ambient2','#10172d');document.documentElement.style.setProperty('--cyan','#53e5ff');document.documentElement.style.setProperty('--pink','#ff5ca8');audioUrl=url;audio=new Audio(url);audio.preload='auto';}
+ audio.addEventListener('ended',()=>{running=false;cancelAnimationFrame(raf);feedback.textContent='Song complete! ✨';playBtn.disabled=false;});
+ generateBtn.disabled=true;playBtn.disabled=true;setStatus('Reading media…');
+ try{
+   audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+   const arr=await file.arrayBuffer();buffer=await audioCtx.decodeAudioData(arr.slice(0));
+   drawWave(buffer);generateBtn.disabled=false;setStatus(`${file.name} · ${formatTime(buffer.duration)}`);feedback.textContent=isVideo?'Video background ready!':'Ready when you are.';generateLevel();
+ }catch(e){
+   if(isVideo){
+     // MP4 decoders differ between browsers; use a playable video with a generated beat grid if its audio cannot be decoded.
+     const duration=await new Promise(resolve=>{if(videoBg.duration&&isFinite(videoBg.duration))resolve(videoBg.duration);else{videoBg.onloadedmetadata=()=>resolve(videoBg.duration||30);videoBg.onerror=()=>resolve(30);setTimeout(()=>resolve(30),2500)}});
+     buffer={duration, sampleRate:1000, getChannelData:()=>new Float32Array(Math.ceil(duration*1000))};
+     drawWave({getChannelData:()=>new Float32Array(1000)});generateBtn.disabled=false;setStatus(`${file.name} · video background (beat-grid fallback)`);feedback.textContent='Video background ready!';generateLevel();
+   }else{buffer=null;setStatus('Could not read this file. Try an MP3 or WAV.');console.error(e)}
+ }
+}
+fileInput.addEventListener('change',async()=>{await loadChosenFile(fileInput.files[0]);});
+randomBtn.addEventListener('click',()=>randomFiles.click());
+randomFiles.addEventListener('change',async()=>{
+ const files=Array.from(randomFiles.files||[]).filter(f=>f.type.startsWith('audio/')||/\.mp3$/i.test(f.name));
+ if(!files.length){setStatus('Select one or more audio files first.');return;}
+ await loadChosenFile(files[Math.floor(Math.random()*files.length)]);randomFiles.value='';
+});
+function formatTime(s){return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0')}
+function drawWave(buf){waveform.innerHTML='';const data=buf.getChannelData(0),n=100,step=Math.floor(data.length/n);for(let i=0;i<n;i++){let max=0;for(let j=i*step;j<Math.min(data.length,(i+1)*step);j+=4)max=Math.max(max,Math.abs(data[j]));let b=document.createElement('div');b.className='bar';b.style.height=Math.max(3,max*44)+'px';waveform.appendChild(b)}}
+function generateLevel(){
+ if(!buffer)return;stopGame();makeKeys();
+ const diff=document.getElementById('difficulty').value;hitWindow=diff==='extreme'?.105:.18;noteSpeed={slow:220,normal:280,fast:350}[document.getElementById('speed').value];leadTime=(stage.clientHeight-65)/noteSpeed+0.12;
+ const isFallback=typeof buffer.getChannelData==='function' && buffer.sampleRate===1000;const data=buffer.getChannelData(0),sr=buffer.sampleRate, hop=Math.floor(sr*.045), frame=Math.floor(sr*.025), energies=[];
+ if(isFallback){const interval=diff==='extreme'?.12:diff==='hard'?.28:diff==='normal'?.42:.65;notes=[];for(let t=.3;t<buffer.duration;t+=interval)notes.push({time:t,lane:Math.floor(Math.random()*lanes),hit:false,missed:false});activeNotes=[];stage.querySelectorAll('.note').forEach(n=>n.remove());score=combo=judged=hits=0;updateStats();feedback.textContent=`Level generated · ${notes.length} notes`;playBtn.disabled=false;stopBtn.disabled=false;setStatus(`Generated ${notes.length} notes · video beat-grid mode`);return;}
+ // Short-window RMS energy. Peaks in positive energy change become note candidates.
+ for(let p=0;p+frame<data.length;p+=hop){let sum=0;for(let j=p;j<p+frame;j+=3)sum+=data[j]*data[j];energies.push(Math.sqrt(sum/Math.ceil(frame/3)))}
+ const smooth=energies.map((v,i)=>{let s=0,n=0;for(let k=Math.max(0,i-2);k<=Math.min(energies.length-1,i+2);k++){s+=energies[k];n++}return s/n});
+ const flux=smooth.map((v,i)=>Math.max(0,v-(smooth[i-2]||smooth[i])));
+ const sorted=[...flux].sort((a,b)=>a-b),threshold=sorted[Math.floor(sorted.length*({easy:.91,normal:.83,hard:.72}[diff]))]||0.001;
+ const minGap={easy:.42,normal:.25,hard:.15,extreme:.075}[diff];let candidates=[],last=-10;
+ for(let i=2;i<flux.length-2;i++){if(flux[i]>=threshold&&flux[i]>=flux[i-1]&&flux[i]>flux[i+1]&&i*hop/sr-last>=minGap){candidates.push(i*hop/sr);last=i*hop/sr}}
+ // Add a light fallback pulse if a song has very few detectable peaks.
+ if(candidates.length<8){const interval=diff==='easy'?.65:diff==='normal'?.42:diff==='extreme'?.11:.29;for(let t=.25;t<buffer.duration;t+=interval)candidates.push(t)}
+ candidates=[...new Set(candidates.map(t=>Math.round(t*20)/20))].filter(t=>t<buffer.duration-.08).sort((a,b)=>a-b);
+ const density={easy:.62,normal:.82,hard:1,extreme:1}[diff];notes=candidates.filter((t,i)=>i===0||Math.random()<density).map((t,i)=>({time:t,lane:Math.floor(Math.random()*lanes),hit:false,missed:false,id:i}));
+ activeNotes=[];stage.querySelectorAll('.note').forEach(n=>n.remove());score=combo=judged=hits=0;updateStats();
+ feedback.textContent=`Level generated · ${notes.length} notes`;playBtn.disabled=false;stopBtn.disabled=false;
+ setStatus(`Generated ${notes.length} notes · ${formatTime(buffer.duration)} song`);
+}
+function updateStats(){scoreEl.textContent=score.toLocaleString();comboEl.textContent=combo;accuracyEl.textContent=judged?Math.round(hits/judged*100)+'%':'—'}
+let countdownTimer=null, ambientRaf=0, lastAmbientSample=0;
+function sampleAmbient(now){
+ if(!videoBg.src || videoBg.style.display==='none')return;
+ if(now-lastAmbientSample>450 && videoBg.readyState>=2){
+  lastAmbientSample=now;
+  try{
+   const c=document.createElement('canvas');c.width=24;c.height=14;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(videoBg,0,0,c.width,c.height);
+   const pixels=ctx.getImageData(0,0,c.width,c.height).data;let r=0,g=0,b=0,n=0;
+   for(let i=0;i<pixels.length;i+=16){r+=pixels[i];g+=pixels[i+1];b+=pixels[i+2];n++}
+   r=Math.round(r/n);g=Math.round(g/n);b=Math.round(b/n);
+   // Blend sampled video colours into a soft ambient glow so text remains readable.
+   const glow=`rgb(${Math.round(r*.58)} ${Math.round(g*.58)} ${Math.round(b*.58)})`;
+   const deep=`rgb(${Math.round(r*.17)} ${Math.round(g*.17)} ${Math.round(b*.2)})`;
+   document.documentElement.style.setProperty('--ambient',glow);document.documentElement.style.setProperty('--ambient2',deep);
+   document.documentElement.style.setProperty('--cyan',`rgb(${Math.min(255,Math.round(r*.45+80))} ${Math.min(255,Math.round(g*.45+120))} ${Math.min(255,Math.round(b*.45+145))})`);
+   document.documentElement.style.setProperty('--pink',`rgb(${Math.min(255,Math.round(r*.35+150))} ${Math.min(255,Math.round(g*.3+65))} ${Math.min(255,Math.round(b*.35+130))})`);
+  }catch(e){/* If the browser cannot sample this video, keep the default theme. */}
+ }
+ ambientRaf=requestAnimationFrame(sampleAmbient);
+}
+function startGame(){
+ if(!audio||!buffer)return;
+ stopGame(false);if(countdownTimer)clearTimeout(countdownTimer);
+ if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();
+ audio.pause();audio.currentTime=0;running=false;score=combo=judged=hits=0;updateStats();
+ playBtn.disabled=true;stopBtn.disabled=false;
+ if(videoBg.src){videoBg.pause();videoBg.currentTime=0;cancelAnimationFrame(ambientRaf);}
+ let count=3;feedback.textContent=String(count);
+ const next=()=>{count--;if(count>0){feedback.textContent=String(count);countdownTimer=setTimeout(next,800);return;}
+  feedback.textContent='GO!';audio.currentTime=0;
+  // Start the background video only when the song begins, keeping both at the same starting point.
+  if(videoBg.src){videoBg.currentTime=0;videoBg.play().catch(()=>{});cancelAnimationFrame(ambientRaf);lastAmbientSample=0;ambientRaf=requestAnimationFrame(sampleAmbient);}
+  audio.play().catch(()=>{});startedAt=audio.currentTime;running=true;tick();countdownTimer=setTimeout(()=>{if(running)feedback.textContent='';},450);
+ };
+ countdownTimer=setTimeout(next,800);
+}
+function stopGame(reset=true){running=false;if(countdownTimer){clearTimeout(countdownTimer);countdownTimer=null;}cancelAnimationFrame(raf);if(audio){audio.pause();if(reset)audio.currentTime=0}if(videoBg.src){videoBg.pause();if(reset)videoBg.currentTime=0}stage.querySelectorAll('.note').forEach(n=>n.remove());activeNotes=[];if(reset){playBtn.disabled=!buffer;feedback.textContent=buffer?'Ready to play again.':'Upload a song, then generate a level!';}}
+function tick(){if(!running)return;const now=audio.currentTime,hitY=stage.clientHeight-65-9;
+ for(const n of notes){if(n.hit||n.missed)continue;const y=hitY-9+(now-n.time)*noteSpeed;if(now>=n.time-leadTime&&!n.el){n.el=document.createElement('div');n.el.className='note';n.el.style.left=((n.lane+.5)*100/lanes)+'%';stage.appendChild(n.el);activeNotes.push(n)}
+ if(n.el){n.el.style.top=y+'px';if(now>n.time+hitWindow){n.missed=true;n.el.remove();combo=0;judged++;updateStats();feedback.textContent='MISS';}}
+ }
+ if(now>buffer.duration+.5){running=false;playBtn.disabled=false;feedback.textContent=`Finished! Score ${score.toLocaleString()} · ${judged?Math.round(hits/judged*100):0}% accuracy`;return}
+ raf=requestAnimationFrame(tick)}
+function hitLane(lane){const key=keyrow.children[lane];if(key){key.classList.add('flash');setTimeout(()=>key.classList.remove('flash'),90)}if(!running)return;
+ const now=audio.currentTime;let target=null,best=Infinity;
+ for(const n of notes){if(n.hit||n.missed||n.lane!==lane)continue;const d=Math.abs(n.time-now);if(d<best){best=d;target=n}}
+ if(target&&best<=hitWindow){target.hit=true;if(target.el){target.el.classList.add('good');target.el.remove()}score+=best<.07?300:best<.13?200:100;combo++;hits++;judged++;feedback.textContent=best<.07?'PERFECT!':best<.13?'GREAT!':'GOOD';updateStats()}
+ else{feedback.textContent='';}
+}
+document.addEventListener('keydown',e=>{if(e.repeat)return;const keys=keyNames[lanes];const idx=keys.indexOf(e.key.toUpperCase());if(idx>=0){e.preventDefault();hitLane(idx)}if(e.code==='Space'&&buffer){e.preventDefault();if(!running)startGame()}});
+generateBtn.addEventListener('click',generateLevel);playBtn.addEventListener('click',startGame);stopBtn.addEventListener('click',()=>stopGame(true));
+})();
+</script>
+</body>
+</html>
